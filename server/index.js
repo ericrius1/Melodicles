@@ -17,9 +17,9 @@ function handler(request, response){
   response.end(data);
 }
 
-io.socket.on('connection', function (socket){
+io.sockets.on('connection', function (socket){
   var ip = socket.handshake.address.address
-  console.('Client connected from' + ip + ' ...');
+  console.log('Client connected from' + ip + ' ...');
 
   //send welcome message
   socket.emit('welcome', {
