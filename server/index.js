@@ -1,32 +1,71 @@
-var app = require('http').createServer(handler)
-var io = require('socket.io').listen(app);
+var http = require('http');
+var io = require('socket.io');
+var url = require("url");
+var path = require("path");
+var fs = require("fs")
 
 var port = 8080;
-var ip = "127.0.0.1";
-app.listen(port, ip);
-console.log("server at http://" + ip + ":" + port);
 
-function handler(request, response){
-  //Dump out a basic server status page
-  var data = '<!doctype html><head><title>DuneBuggy Server</title></head><body>';
-  
-  data += '<h1>DuneBuggy Server</h1>';
- 
-  
-  response.writeHead(200);
-  response.end(data);
-}
+var app = http.createServer(function(request, response) {
+  var uri = url.parse(request.url).pathname,
+    filename = path.join(process.cwd(), uri);
+  var contentTypesByExtension = {
+    '.html': "text/html",
+    '.css': "text/css",
+    '.js': "text/javascript"
+  };
 
-io.sockets.on('connection', function (socket){
+  path.exists(filename, function(exists) {
+    if (!exists) {
+      response.writeHead(404, {
+        "Content-Type": "text/plain"
+      })
+      response.write("404 Not Found\n");
+      response.end();
+      return;
+    }
+
+    if (fs.statSync(filename).isDirectory()) filename += '/index.html';
+
+    fs.readFile(filename, "binary", function(err, file) {
+      if (err) {
+        response.writeHead(500, {
+          "Content-Type": "text/plain"
+        });
+        response.write(ee + "\n");
+        response.end();
+        return;
+      }
+
+      var headers = {};
+      var contentType = contentTypesByExtension[path.extname(filename)];
+      if (contentType) {
+        headers["Content-Type"] = contentType;
+      }
+      response.writeHead(200, headers);
+      response.write(file, "binary");
+      response.end();
+    });
+  });
+});
+
+
+//WHY IS THIS NOT WORKING AND SOCKET IS UNDEFINED?*****
+io.listen(port);
+app.listen(port);
+
+
+
+console.log(io.sockets);
+
+io.sockets.on('connection', function(socket) {
   var ip = socket.handshake.address.address
-  console.log('Client connected from' + ip + ' ...');
 
   //send welcome message
   socket.emit('welcome', {
     message: "Welcome to Melodicles"
   });
 
-  //Set up Message handlers
+
 
 });
-
