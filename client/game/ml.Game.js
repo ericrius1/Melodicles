@@ -175,7 +175,7 @@ ml.Game = new Class({
 
         if (object instanceof THREE.ParticleSystem) {
 
-          object.rotation.y = time * (i < 4 ? 100 *(i + 1) : -(i + 1));
+          object.rotation.y = time * (i < 4 ? (i + 1) : -(i + 1));
 
         }
 

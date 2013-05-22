@@ -1,309 +1,234 @@
-/**
- * Crockford's new_constructor pattern, modified to allow walking the prototype chain, automatic init/destruct calling of super classes, and easy toString methods
- *
- * @function
- *
- * @param {Object} descriptor           Descriptor object
- * @param {String or Function} descriptor.toString  A string or method to use for the toString of this class and instances of this class
- * @param {Object} descriptor.extend        The class to extend
- * @param {Function} descriptor.construct     The constructor (setup) method for the new class
- * @param {Function} descriptor.destruct      The destructor (teardown) method for the new class
- * @param {Anything} descriptor.*         Other methods and properties for the new class
- *
- * @returns {BaseClass} The created class.
+/*
+  Class - JavaScript inheritance
+
+  Construction:
+    Setup and construction should happen in the construct() method.
+    The construct() method is automatically chained, so all construct() methods defined by superclass methods will be called first.
+
+  Initialization:
+    Initialziation that needs to happen after all construct() methods have been called should be done in the init() method.
+    The init() method is not automatically chained, so you must call _super() if you intend to call the superclass' init method.
+    init() is not passed any arguments
+
+  Destruction:
+    Teardown and destruction should happen in the destruct() method. The destruct() method is also chained.
+
+  Mixins:
+    An array of mixins can be provided with the mixins[] property. An object or the prototype of a class should be provided, not a constructor.
+    Mixins can be added at any time by calling this.mixin(properties)
+
+  Usage:
+    var MyClass = Class(properties);
+    var MyClass = new Class(properties);
+    var MyClass = Class.extend(properties);
+
+  Credits:
+    Inspired by Simple JavaScript Inheritance by John Resig http://ejohn.org/
+
+  Usage differences:
+    construct() is used to setup instances and is automatically chained so superclass construct() methods run automatically
+    destruct() is used  to tear down instances. destruct() is also chained
+    init(), if defined, is called after construction is complete and is not chained
+    toString() can be defined as a string or a function
+    mixin() is provided to mix properties into an instance
+    properties.mixins as an array results in each of the provided objects being mixed in (last object wins)
+    _super is passed as an argument (not as this._super) and can be used asynchronously
 */
-var Class;
+(function(global) {
+  // Used for default initialization methods
+  var noop = function() {};
 
-(function() {
-  /**
-   * The class blueprint which contains the methods that all classes will automatically have.
-   * BaseClass cannot be extended or instantiated and does not exist in the global namespace.
-   * If you create a class using <code>new Class()</code> or <code>MyClass.extend()</code>, it will come with BaseClass' methods.
-   *
-   * @class
-   * @name BaseClass
-   *
-   * @param {Object} options  Instance options. Guaranteed to be defined as at least an empty Object
-   */
-  
-  /**
-   * Destroys this instance and frees associated memory.
-   *
-   * @name destruct
-   * @memberOf BaseClass.prototype
-   * @function
-   */
-  
-  /**
-   * Binds a method of this instance to the execution scope of this instance.
-   *
-   * @name bind
-   * @memberOf BaseClass.prototype
-   * @function
-   *
-   * @param {Function} func The this.method you want to bind
-   */
-  var bindFunc = function(func) {
-    // Bind the function to always execute in scope
-    var boundFunc = func.bind(this);
+  // Given a function, the superTest RE will match if _super is the first argument to a function
+  // The function will be serialized, then the serialized string will be searched for _super
+  // If the environment isn't capable of function serialization, make it so superTest.test always returns true
+  var superTest = /xyz/.test(function(){return 'xyz';}) ? /\(\s*_super\b/ : { test: function() { return true; } };
 
-    // Store the method name
-    boundFunc._methodName = func._methodName;
-
-    // Store the bound function back to the class
-    this[boundFunc._methodName] = boundFunc;
-
-    // Return the bound function
-    return boundFunc;
+  // Remove the _super function from the passed arguments array
+  var removeSuper = function(args, _super) {
+    // For performance, first check if at least one argument was passed
+    if (args && args.length && args[0] === _super)
+      args = Array.prototype.slice.call(args, 1);
+    return args;
   };
-  
-  /**
-   * Extends this class using the passed descriptor. 
-   * Called on the Class itself (not an instance), this is an alternative to using <code>new Class()</code>.
-   * Any class created using Class will have this static method on the class itself.
-   *
-   * @name extend
-   * @memberOf BaseClass
-   * @function
-   *
-   * @param {Object} descriptor           Descriptor object
-   * @param {String or Function} descriptor.toString  A string or method to use for the toString of this class and instances of this class
-   * @param {Object} descriptor.extend        The class to extend
-   * @param {Function} descriptor.construct     The constructor (setup) method for the new class
-   * @param {Function} descriptor.destruct      The destructor (teardown) method for the new class
-   * @param {Anything} descriptor.*         Other methods and properties for the new class
-   */
-  var extendClass = function(descriptor) {
-    return new Class(_.extend({}, descriptor, {
-      extend: this
-    }));
-  };
-  
-  Class = function(descriptor) {
-    descriptor = descriptor || {};
 
-    if (descriptor.hasOwnProperty('extend') && !descriptor.extend) {
-      console.warn('Class: %s is attempting to extend a non-truthy thing', descriptor.toString === 'function' ? descriptor.toString : descriptor.toString, descriptor.extend);
-    }
+  // Bind an overriding method such that it gets the overridden method as its first argument
+  var superify = function(name, func, superPrototype, isStatic) {
+    var _super;
 
-    // Extend Object by default
-    var extend = descriptor.extend || Object;
+    // We redefine _super.apply so _super is stripped from the passed arguments array
+    // This allows implementors to call _super.apply(this, arguments) without manually stripping off _super
+    if (isStatic) {
+      // Static binding: If the passed superPrototype is modified, the bound function will still call the ORIGINAL method
+      // This comes into play when functions are mixed into an object that already has a function by that name (i.e. two mixins are used)
+      var superFunc = superPrototype[name];
+      _super = function _superStatic() {
+        return superFunc.apply(this, arguments);
+      };
 
-    // Construct and destruct are not required
-    var construct = descriptor.construct;
-    var destruct = descriptor.destruct;
-
-    // Remove special methods and keywords from descriptor
-    delete descriptor.bind;
-    delete descriptor.extend;
-    delete descriptor.destruct;
-    delete descriptor.construct;
-
-    // Add toString method, if necessary
-    if (descriptor.hasOwnProperty('toString') && typeof descriptor.toString !== 'function') {
-      // Return the string provided
-      var classString = descriptor.toString;
-      descriptor.toString = function() {
-        return classString.toString();
+      _super.apply = function _applier(context, args) {
+        return Function.prototype.apply.call(superFunc, context, removeSuper(args, _super));
       };
     }
-    else if (!descriptor.hasOwnProperty('toString') && extend.prototype.hasOwnProperty('toString')) {
-      // Use parent's toString
-      descriptor.toString = extend.prototype.toString;
+    else {
+      // Dynamic binding: If the passed superPrototype is modified, the bound function will call the NEW method
+      // This comes into play when functions are mixed into a class at declaration time
+      _super = function _superDynamic() {
+        return superPrototype[name].apply(this, arguments);
+      };
+
+      _super.apply = function _applier(context, args) {
+        return Function.prototype.apply.call(superPrototype[name], context, removeSuper(args, _super));
+      };
     }
 
-    // The remaining properties in descriptor are our methods
-    var methodsAndProps = descriptor;
+    // Name the function for better stack traces
+    return function _passSuper() {
+      // Add the super function to the start of the arguments array
+      var args = Array.prototype.slice.call(arguments);
+      args.unshift(_super);
 
-    // Create an object with the prototype of the class we're extending
-    var prototype = Object.create(extend && extend.prototype);
+      // Call the function with the modified arguments
+      return func.apply(this, args);
+    };
+  };
 
-    // Store super class as a property of the new class' prototype
-    prototype.superClass = extend.prototype;
+  // Mix the provided properties into the current context with the ability to call overridden methods with _super()
+  var mixin = function(properties, superPrototype) {
+    // Use this instance
+    superPrototype = superPrototype || this.constructor && this.constructor.prototype;
+    
+    // Copy the properties onto the new prototype
+    for (var name in properties) {
+      // Never mix construct or destruct
+      if (name === 'construct' || name === 'destruct')
+        continue;
 
-    // Copy new methods into prototype
-    if (methodsAndProps) {  
-      for (var key in methodsAndProps) {
-        if (methodsAndProps.hasOwnProperty(key)) {
-          prototype[key] = methodsAndProps[key];
+      // Check if the function uses _super
+      // It should be a function, the super prototype should have a function by the same name
+      // And finally, the function should take _super as its first argument
+      var usesSuper = superPrototype && typeof properties[name] === 'function' && typeof superPrototype[name] === 'function' && superTest.test(properties[name]);
 
-          // Store the method name so calls to inherited() work
-          if (typeof methodsAndProps[key] === 'function') {
-            prototype[key]._methodName = key;
-            prototype[key]._parentProto = prototype;
-          }
-        }
-      }
-    }
-
-    /**
-     * A function that calls an inherited method by the same name as the callee
-     *
-     * @name inherited
-     * @memberOf BaseClass.prototype
-     * @function
-     *
-     * @param {Arguments} args  Unadulterated arguments array from calling function
-     */
-    prototype.inherited = function(args) {
-      // Get the function that call us from the passed arguments objected
-      var caller = args.callee;
-
-      // Get the name of the method that called us from a property of the method
-      var methodName = caller._methodName;
-
-      if (!methodName) {
-        console.error("Class.inherited: can't call inherited method: calling method did not have _methodName", args.callee);
-        return;
-      }
-
-      // Start iterating at the prototype that this function is defined in
-      var curProto = caller._parentProto;
-      var inheritedFunc = null;
-
-      // Iterate up the prototype chain until we find the inherited function
-      while (curProto.superClass) {
-        curProto = curProto.superClass;
-        inheritedFunc = curProto[methodName];
-        if (typeof inheritedFunc === 'function')
-          break;
-      }
-
-      if (typeof inheritedFunc === 'function') {
-        // Store our inherited function
-        var oldInherited = this.inherited;
-
-        // Overwrite our inherited function with that of the prototype so the called function can call its parent
-        this.inherited = curProto.inherited;
-
-        // Call the inherited function our scope, apply the passed args array
-        var retVal = inheritedFunc.apply(this, args);
-
-        // Revert our inherited function to the old function
-        this.inherited = oldInherited;
-
-        // Return the value called by the inherited function
-        return retVal;
+      if (usesSuper) {
+        // Wrap the function such that _super will be passed accordingly
+        if (this.hasOwnProperty(name))
+          this[name] = superify(name, properties[name], this, true);
+        else
+          this[name] = superify(name, properties[name], superPrototype, false);
       }
       else {
-        console.warn("Class.inherited: can't call inherited method for '%s': no method by that name found", methodName);
-        console.trace();
+        // Directly assign the property
+        this[name] = properties[name];
       }
-    };
-    
-    // Add bind to the prototype of the class
-    prototype.bind = bindFunc;
-
-    /**
-     * Call the destruct method of all inherited classes
-     */
-    prototype.destruct = function() {
-      // Call our destruct method first
-      if (typeof destruct === 'function') {
-        destruct.apply(this);
-      }
-
-      // Call superclass destruct method after this class' method
-      if (extend && extend.prototype && typeof extend.prototype.destruct === 'function') {
-        extend.prototype.destruct.apply(this);      
-      }
-    };
-
-    /**
-     * Construct is called automatically
-     */
-    // Create a chained construct function which calls the superclass' construct function
-    prototype.construct = function() {
-      // Add a blank object as the first arg to the constructor, if none provided
-      var args = arguments; // get around JSHint complaining about modifying arguments
-      if (args[0] === undefined) {
-        args.length = 1;
-        args[0] = {};
-      }
-
-      // call superclass constructor
-      if (extend && extend.prototype && typeof extend.prototype.construct === 'function') {
-        extend.prototype.construct.apply(this, arguments);
-      }
-
-      // call constructor
-      if (typeof construct === 'function') {
-        construct.apply(this, arguments);
-      }
-    };
-
-    // Create a function that generates instances of our class and calls our construct functions
-    /** @private */
-    var instanceGenerator = function() {
-      // Create a new object with the prototype we built
-      var instance = Object.create(prototype);
-
-      // Call all inherited construct functions
-      prototype.construct.apply(instance, arguments);
-      
-      if (instance.init)
-        instance.init();
-
-      return instance;
-    };
-
-    // Set the prototype of our instance generator to the prototype of our new class so things like MyClass.prototype.method.apply(this) work
-    instanceGenerator.prototype = prototype;
-
-    // Add extend to the instance generator for the class
-    instanceGenerator.extend = extendClass;
-
-    // The constructor, as far as JS is concerned, is actually our instance generator
-    prototype.constructor = instanceGenerator;
-
-    return instanceGenerator;
+    }
   };
 
-  if (!Object.create) {
-    /**
-     * Polyfill for Object.create. Creates a new object with the specified prototype.
-     * 
-     * @author <a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object/create/">Mozilla MDN</a>
-     *
-     * @param {Object} prototype  The prototype to create a new object with
-     */
-    Object.create = function (prototype) {
-      if (arguments.length > 1) {
-        throw new Error('Object.create implementation only accepts the first parameter.');
+  // The base Class implementation acts as extend alias, with the exception that it can take properties.extend as the Class to extend
+  var Class = function(properties) {
+    // If a class-like object is passed as properties.extend, just call extend on it
+    if (properties && properties.extend)
+      return properties.extend.extend(properties);
+
+    // Otherwise, just create a new class with the passed properties
+    return Class.extend(properties);
+  };
+  
+  // Add the mixin method to all classes created with Class
+  Class.prototype.mixin = mixin;
+  
+  // Creates a new Class that inherits from this class
+  // Give the function a name so it can refer to itself without arguments.callee
+  Class.extend = function extend(properties) {
+    var superPrototype = this.prototype;
+    
+    // Create an object with the prototype of the superclass
+    var prototype = Object.create(superPrototype);
+    
+    if (properties) {
+      // Mix the new properties into the class prototype
+      // This does not copy construct and destruct
+      mixin.call(prototype, properties, superPrototype);
+      
+      // Mix in all the mixins
+      // This also does not copy construct and destruct
+      if (Array.isArray(properties.mixins)) {
+        for (var i = 0, ni = properties.mixins.length; i < ni; i++) {
+          // Mixins should be _super enabled, with the methods defined in the prototype as the superclass methods
+          mixin.call(prototype, properties.mixins[i], prototype);
+        }
       }
-      function Func() {}
-      Func.prototype = prototype;
-      return new Func();
-    };
-  }
-
-  if (!Function.prototype.bind) {
-    /**
-     * Polyfill for Function.bind. Binds a function to always execute in a specific scope.
-     * 
-     * @author <a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function/bind">Mozilla MDN</a>
-     *
-     * @param {Object} scope  The scope to bind the function to
-     */
-    Function.prototype.bind = function (scope) {
-      if (typeof this !== "function") {
-        // closest thing possible to the ECMAScript 5 internal IsCallable function
-        throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");
+      
+      // Chain the construct() method (supermost executes first) if necessary
+      if (properties.construct && superPrototype.construct) {
+        prototype.construct = function() {
+          superPrototype.construct.apply(this, arguments);
+          properties.construct.apply(this, arguments);
+        };
       }
+      else if (properties.construct)
+        prototype.construct = properties.construct;
+      
+      // Chain the destruct() method in reverse order (supermost executes last) if necessary
+      if (properties.destruct && superPrototype.destruct) {
+        prototype.destruct = function() {
+          properties.destruct.apply(this, arguments);
+          superPrototype.destruct.apply(this, arguments);
+        };
+      }
+      else if (properties.destruct)
+        prototype.destruct = properties.destruct;
+      
+      // Allow definition of toString as a string (turn it into a function)
+      if (typeof properties.toString === 'string') {
+        var className = properties.toString;
+        prototype.toString = function() { return className; };
+      }
+    }
 
-      var aArgs = Array.prototype.slice.call(arguments, 1);
-      var fToBind = this;
-      /** @ignore */
-      var NoOp = function() {};
-      /** @ignore */
-      var fBound = function() {
-        return fToBind.apply(this instanceof NoOp ? this : scope, aArgs.concat(Array.prototype.slice.call(arguments)));
-      };
+    // Define construct and init as noops if undefined
+    // This serves to avoid conditionals inside of the constructor
+    if (typeof prototype.construct !== 'function')
+      prototype.construct = noop;
+    if (typeof prototype.init !== 'function')
+      prototype.init = noop;
 
-      NoOp.prototype = this.prototype;
-      fBound.prototype = new NoOp();
-
-      return fBound;
-    };
+    // The constructor handles creating an instance of the class, applying mixins, and calling construct() and init() methods
+    function Class() {
+      // Optimization: Requiring the new keyword and avoiding usage of Object.create() increases performance by 5x
+      if (this instanceof Class === false) {
+        throw new Error('Cannot create instance without new operator');
+      }
+      
+      // Optimization: Avoiding conditionals in constructor increases performance of instantiation by 2x
+      this.construct.apply(this, arguments);
+      this.init();
+    }
+    
+    // Store the extended class'prototype as the prototype of the constructor
+    Class.prototype = prototype;
+    
+    // Assign prototype.constructor to the constructor itself
+    // This allows instances to refer to this.constructor.prototype
+    // This also allows creation of new instances using instance.constructor()
+    Class.prototype.constructor = Class;
+    
+    // Add extend() as a static method on the constructor
+    Class.extend = extend;
+    
+    return Class;
+  };
+  
+  if (typeof module !== 'undefined' && module.exports) {
+    // Node.js Support
+    module.exports = Class;
   }
-}());
+  else if (typeof global.define === 'function') {
+    (function(define) {
+      // AMD Support
+      define(function() { return Class; });
+    }(global.define));
+  }
+  else {
+    // Browser support
+    global.Class = Class;
+  }
+}(this));
