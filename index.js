@@ -1,12 +1,14 @@
-var http = require('http');
-var io = require('socket.io');
+var app = require('http').createServer(handler);
+var io = require('socket.io').listen(app);
 var url = require("url");
 var path = require("path");
 var fs = require("fs")
 
 var port = 8080;
+app.listen(port);
+console.log("listening at http://" + '127.0.0.1:' +port);
 
-var app = http.createServer(function(request, response) {
+function handler(request, response) {
   var uri = url.parse(request.url).pathname,
     filename = path.join(process.cwd(), uri);
   var contentTypesByExtension = {
@@ -25,14 +27,16 @@ var app = http.createServer(function(request, response) {
       return;
     }
 
-    if (fs.statSync(filename).isDirectory()) filename += '/index.html';
+    if (fs.statSync(filename).isDirectory()) {
+      filename += '/index.html';
+    }
 
     fs.readFile(filename, "binary", function(err, file) {
       if (err) {
         response.writeHead(500, {
           "Content-Type": "text/plain"
         });
-        response.write(ee + "\n");
+        response.write(err + "\n");
         response.end();
         return;
       }
@@ -47,16 +51,8 @@ var app = http.createServer(function(request, response) {
       response.end();
     });
   });
-});
+};
 
-
-//WHY IS THIS NOT WORKING AND SOCKET IS UNDEFINED?*****
-io.listen(port);
-app.listen(port);
-
-
-
-console.log(io.sockets);
 
 io.sockets.on('connection', function(socket) {
   var ip = socket.handshake.address.address
@@ -65,7 +61,4 @@ io.sockets.on('connection', function(socket) {
   socket.emit('welcome', {
     message: "Welcome to Melodicles"
   });
-
-
-
 });

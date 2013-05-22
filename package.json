@@ -1,10 +1,17 @@
 {
   "name": "Melodicles",
-  "subdomain": "ericrius1-Melodicles",
-  "scripts": {
-    "start": "node server"
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ericrius/Melodicles.git"
   },
-  "version": "0.0.0-1",
+  "dependencies": {
+    "socket.io": "0.9"
+  },
+  "subdomain": "ericrius1-server",
+  "scripts": {
+    "start": "node index.js"
+  },
   "engines": {
     "node": "0.8.x"
   }
