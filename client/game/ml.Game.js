@@ -30,11 +30,11 @@ ml.Game = new Class({
 
       geometry = new THREE.Geometry();
 
-      sprite1 = THREE.ImageUtils.loadTexture("textures/sprites/snowflake1.png");
-      sprite2 = THREE.ImageUtils.loadTexture("textures/sprites/snowflake2.png");
-      sprite3 = THREE.ImageUtils.loadTexture("textures/sprites/snowflake3.png");
-      sprite4 = THREE.ImageUtils.loadTexture("textures/sprites/snowflake4.png");
-      sprite5 = THREE.ImageUtils.loadTexture("textures/sprites/snowflake5.png");
+      sprite1 = THREE.ImageUtils.loadTexture("client/textures/sprites/snowflake1.png");
+      sprite2 = THREE.ImageUtils.loadTexture("client/textures/sprites/snowflake2.png");
+      sprite3 = THREE.ImageUtils.loadTexture("client/textures/sprites/snowflake3.png");
+      sprite4 = THREE.ImageUtils.loadTexture("client/textures/sprites/snowflake4.png");
+      sprite5 = THREE.ImageUtils.loadTexture("client/textures/sprites/snowflake5.png");
 
       for (i = 0; i < NUM_PARTICLES; i++) {
 
@@ -175,7 +175,7 @@ ml.Game = new Class({
 
         if (object instanceof THREE.ParticleSystem) {
 
-          object.rotation.y = time * (i < 4 ? i + 1 : -(i + 1));
+          object.rotation.y = time * (i < 4 ? 100 *(i + 1) : -(i + 1));
 
         }
 
