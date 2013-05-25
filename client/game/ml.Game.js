@@ -5,20 +5,18 @@ ml.Game = new Class({
 
   construct: function(options) {
     this.options = jQuery.extend({}, this.defaults, options);
-    console.log("new game");
-    this.init();
-
     this.SCREEN_WIDTH = window.innerWidth;
     this.SCREEN_HEIGHT = window.innerHeight;
     this.MARGIN = 0;
     this.numContributors = 100;
+    console.log("new game");
+    this.init();
+
   },
 
   init: function() {
 
-    this.container = document.createElement('div');
-    document.body.appendChild(container);
-
+    this.container = document.getElementById("container");
 
     //******THREE.JS SETUP******
 
@@ -66,8 +64,9 @@ ml.Game = new Class({
     this.renderer = new THREE.WebGLRenderer({antialias: true, clearColor: 0xffffff});
     this.renderer.sortObject = false;
     this.renderer.setSize(window.innerWidth, window.innerHeight);
-
+    debugger;
     this.container.appendChild(this.renderer.domElement);
+    this.animate();
   },
 
   setUpContributors: function() {
@@ -118,7 +117,22 @@ ml.Game = new Class({
 
   },
 
+  animate: function(){
+    var self = this;
+    window.requestAnimationFrame(function(){
+      self.animate();
+    });
+    this.render();
+  },
+
+  render: function(){
+    this.renderer.render(this.scene, this.camera);
+
+  },
+
   handleJoin: function(message) {
     console.log("waaah");
-  }
+  },
+
+
 });
