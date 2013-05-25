@@ -5,6 +5,7 @@ var path = require("path");
 var fs = require("fs")
 
 var port = 8080;
+io.set('log level', 1);
 app.listen(port);
 console.log("listening at http://" + '127.0.0.1:' + port);
 
@@ -66,17 +67,14 @@ io.sockets.on('connection', function(socket) {
 
   //Setup message handler
   socket.on('join', function(message) {
-    if (contributors[message.id] !== null){
-      console.log("added job");
-    }
     socket.broadcast.emit('join', {
 
     });
   });
 
-    socket.on('add_box', function(message) {
-      debugger;
-    if (boxes[message.id] !== null){
+  socket.on('add_box', function(message) {
+    console.log("RECIEVED")
+    if (boxes[message.id] !== null) {
       console.log("added job");
     }
     socket.broadcast.emit('add_box', {

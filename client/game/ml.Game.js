@@ -8,8 +8,8 @@ ml.Game = new Class({
     this.options = jQuery.extend({}, this.defaults, options);
     var container, stats;
     var camera, controls, scene, projector, renderer;
-    var objects = [],
-      plane;
+    objects = [];
+    var plane;
     numContributors = 1;
     socket = io.connect(this.options.comm.server)
 
@@ -265,11 +265,15 @@ ml.Game = new Class({
 
     this.comm.on('join', this.handleJoin);
     this.comm.connected();
+
+    for(var i = 0; i < objects.length; i++ ){
+      this.handleAddBox(objects[i].position);
+    }
   },
   handleJoin: function(message) {
     console.log("SHNUR");
   },
-  handleAddBox: function(object){
-    this.comm.addBox(object);
+  handleAddBox: function(position){
+    this.comm.addBox(position);
   }
 });

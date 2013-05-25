@@ -36,5 +36,11 @@ ml.Comm = new Class({
   connected: function(){
     console.log("yeah")
     this.socket.emit('join', {});
+  },
+
+  addBox: function(position){
+    this.socket.emit('add_box', {
+       position: position
+    });
   }
 });
