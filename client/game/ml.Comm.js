@@ -1,4 +1,5 @@
-db.Comm = new Class({
+
+ml.Comm = new Class({
   extend: EventEmitter,
   makeTrigger: function(evt) {
     var that = this;
@@ -11,6 +12,7 @@ db.Comm = new Class({
     //Todo: Seend server destruct message
   },
 
+
   construct: function(options) {
     options = jQuery.extend({
       server: 'localhost: 8080'
@@ -21,14 +23,16 @@ db.Comm = new Class({
     var that = this;
 
     //Create socket connection
-    this.socket = io.connect(options.server);
 
-    this.socket.on('join', this.makeTrigger('join'));
-    this.socket.on('failed'),
-    function(message) {
-      //try to reconnect
-      that.connected();
-    }
+    //******** CANT FIGURE OUT HOW TO REFERENCE io!!
+    // this.socket = io.connect(options.server);
+
+    // this.socket.on('join', this.makeTrigger('join'));
+    // this.socket.on('failed'),
+    // function(message) {
+    //   //try to reconnect
+    //   that.connected();
+    // }
 
 
   }
