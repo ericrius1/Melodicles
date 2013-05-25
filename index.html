@@ -2,13 +2,21 @@
 <html>
 <head>
   <title> Melodicles</title>
-  <script src= "../client/lib/jquery.js"></script>
-  <script src = "../client/lib/three.js"></script>
-  <script src = "../client/lib/stats.min.js"></script>
-  <script src = "../client/lib/Class.js"></script>
-  <script src = "../client/lib/EventEmitter.js"></script>
-  <script src = "../client/game/ml.js"></script>
-  <script src = "../client/game/ml.Game.js"></script>
+  <script src= "client/lib/jquery.js"></script>
+  <script src = "client/lib/three.js"></script>
+  <script src = "client/lib/stats.min.js"></script>
+  <script src = "client/lib/Class.js"></script>
+  <script src = "client/lib/EventEmitter.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+
+  <script src = "client/game/ml.js"></script>
+  <script src = "client/game/ml.Game.js"></script>
+  <script src = "client/game/ml.Comm.js"></script>
+
+  <div id="container"></div>
+  <div id="info">
+    Make beautiful art with friends
+  </div>
 
   <script>
     $(document).ready(function() {

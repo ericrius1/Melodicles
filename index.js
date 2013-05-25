@@ -6,7 +6,7 @@ var fs = require("fs")
 
 var port = 8080;
 app.listen(port);
-console.log("listening at http://" + '127.0.0.1:' +port);
+console.log("listening at http://" + '127.0.0.1:' + port);
 
 function handler(request, response) {
   var uri = url.parse(request.url).pathname,
@@ -60,5 +60,14 @@ io.sockets.on('connection', function(socket) {
   //send welcome message
   socket.emit('welcome', {
     message: "Welcome to Melodicles"
+  });
+
+  //Setup message handler
+  socket.on('join', function(message) {
+         console.log("shnur?");
+    socket.broadcast.emit('join', {
+
+      
+    });
   });
 });
