@@ -4,20 +4,21 @@ ml.Game = new Class({
   defaults: $.extend({}, ml.config),
 
   construct: function(options) {
-
+    this.options = jQuery.extend({}, this.defaults, options);
     var container, stats;
     var camera, controls, scene, projector, renderer;
     var objects = [],
       plane;
 
+
+
     var mouse = new THREE.Vector2(),
       offset = new THREE.Vector3(),
       INTERSECTED, SELECTED;
-
-    init();
+    initializeWorld();
     animate();
 
-    function init() {
+    function initializeWorld() {
 
       container = document.createElement('div');
       document.body.appendChild(container);
@@ -256,5 +257,20 @@ ml.Game = new Class({
 
     }
 
+  },
+
+  init: function() {
+    //SERVER EVENTS
+    debugger;
+    this.comm = new ml.Comm({
+      server: this.options.comm.server
+    });
+
+    this.comm.on('join', this.handleJoin);
+
+    this.comm.connected();
+  },
+  handleJoin: function(message) {
+    console.log("SHNUR");
   }
 });
