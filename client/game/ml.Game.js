@@ -6,8 +6,7 @@ ml.Game = new Class({
   construct: function(options) {
     this.options = jQuery.extend({}, this.defaults, options);
     console.log("new game");
-
-    this.init();
+    //this.init();
   },
 
   init: function() {
@@ -18,8 +17,9 @@ ml.Game = new Class({
     this.comm = new ml.Comm({
       server: this.options.comm.server
     });
-
+    console.log("test")
     this.comm.on('join', this.handleJoin);
+    this.comm.connected();
   },
 
   handleJoin: function(message){

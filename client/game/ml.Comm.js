@@ -18,22 +18,22 @@ ml.Comm = new Class({
       server: 'localhost: 8080'
     }, options);
 
-    options.server = 'http://' + options.server;
+    options.server = options.server;
 
     var that = this;
 
-    //Create socket connection
+    this.socket = io.connect(options.server);
 
-    //******** CANT FIGURE OUT HOW TO REFERENCE io!!
-    // this.socket = io.connect(options.server);
+    this.socket.on('join', this.makeTrigger('join'));
+    this.socket.on('failed'),
+    function(message) {
+      //try to reconnect
+      that.connected();
+    }
+  },
 
-    // this.socket.on('join', this.makeTrigger('join'));
-    // this.socket.on('failed'),
-    // function(message) {
-    //   //try to reconnect
-    //   that.connected();
-    // }
-
-
+  connected: function(){
+    console.log("yeah")
+    this.socket.emit('join', {});
   }
 });
