@@ -101,6 +101,7 @@ THREE.TrackballControls = function ( object, domElement ) {
   };
 
   this.getMouseProjectionOnBall = function ( clientX, clientY ) {
+ 
 
     var mouseOnBall = new THREE.Vector3(
       ( clientX - _this.screen.width * 0.5 - _this.screen.offsetLeft ) / _this.radius,
@@ -132,9 +133,11 @@ THREE.TrackballControls = function ( object, domElement ) {
 
   this.rotateCamera = function () {
 
+
     var angle = Math.acos( _rotateStart.dot( _rotateEnd ) / _rotateStart.length() / _rotateEnd.length() );
 
     if ( angle ) {
+
 
       var axis = ( new THREE.Vector3() ).crossVectors( _rotateStart, _rotateEnd ).normalize(),
         quaternion = new THREE.Quaternion();
@@ -245,6 +248,7 @@ THREE.TrackballControls = function ( object, domElement ) {
 
   this.update = function () {
 
+
     _eye.subVectors( _this.object.position, _this.target );
 
     if ( !_this.noRotate ) {
@@ -343,6 +347,7 @@ THREE.TrackballControls = function ( object, domElement ) {
 
   function mousedown( event ) {
 
+
     if ( _this.enabled === false ) return;
 
     event.preventDefault();
@@ -374,6 +379,7 @@ THREE.TrackballControls = function ( object, domElement ) {
   }
 
   function mousemove( event ) {
+  
 
     if ( _this.enabled === false ) return;
 

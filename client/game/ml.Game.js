@@ -132,6 +132,10 @@ ml.Game = new Class({
     }
   },
 
+  pick: function() {
+
+  },
+
   applyVertexColors: function(geometry, color) {
     geometry.faces.forEach(function(face) {
       var numVertices = (face instanceof THREE.Face3) ? 3 : 4;
@@ -153,7 +157,6 @@ ml.Game = new Class({
   render: function() {
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
-
   },
 
   handleJoin: function(message) {
