@@ -22,36 +22,38 @@ ml.Game = new Class({
     //******THREE.JS SETUP******
 
     //CAMERA
-    this.camera = new THREE.PerspectiveCamera(45, this.SCREEN_WIDTH / this.SCREEN_HEIGHT, 1, 10000);
-    this.camera.position.set(-500, 500, 1500);
+    this.camera = new THREE.PerspectiveCamera(70, this.SCREEN_WIDTH / this.SCREEN_HEIGHT, 1, 10000);
+    this.camera.position.z = 1000;
+
+    //Controls
+    this.controls = new THREE.TrackballControls(this.camera);
+    this.controls.rotateSpeed = 1.0;
+    this.controls.zoomSpeed = 1.2;
+    this.controls.panSpeed = 0.8;
+    this.controls.noZoom = false;
+    this.controls.noPan = false;
+    this.controls.staticMoving = true;
+    this.controls.dynamicDampingFactpr = 0.3;
+
 
     //SCENE
     this.scene = new THREE.Scene();
+    this.pickingScene = new THREE.Scene();
+    pickingTexture = new THREE.WebGLRenderTarget(this.SCREEN_WIDTH, this.SCREEN_HEIGHT);
 
     //LIGHTS
-
-    this.light = new THREE.DirectionalLight (0xffffff);
-    this.light.position.set(0.5, 0.5, 1);
+    this.light = new THREE.SpotLight(0xfffffff, 1.5);
+    this.light.position.set(0, 500, 2000);
     this.scene.add(this.light);
 
-    //RENDERER
+    //GEOMETRY
+    this.gemometry = new THREE.Geometry();
+    this.pickingGeometry = new THREE.MeshBasicMaterial({vertexColors: THREE.VertexColors});
+    this.defaultMaterial = new THREE.MeshLambertMaterial({color: 0xffffff, shading: THREE.FlatShading, vertexColors: THREE.VertexXolors});
+  },
 
-    this.renderer = new THREE.WebGLRenderer( {alpha: false});
-    this.renderer.setClearColor(0x050505);
-    this.renderer.setSize(this.SCREEN_WIDTH, this.SCREEN_HEIGHT);
+  applyVertexColors: function(geometry, color){
 
-    this.renderer.domElement.style.position = "absolute";
-    this.renderer.domElement.style.top = this.MARGIN + "px";
-    this.renderer.domElement.style.left = "0px";
-
-    container.appendChild(this.renderer.domElement);
-
-    this.comm = new ml.Comm({
-      server: this.options.comm.server
-    });
-    console.log("test")
-    this.comm.on('join', this.handleJoin);
-    this.comm.connected();
   },
 
   handleJoin: function(message){
