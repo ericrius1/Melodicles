@@ -25,6 +25,7 @@ ml.Comm = new Class({
     this.socket = io.connect(options.server);
 
     this.socket.on('join', this.makeTrigger('join'));
+    this.socket.on('add_box', this.makeTrigger('add_box'));
     this.socket.on('failed'),
     function(message) {
       //try to reconnect

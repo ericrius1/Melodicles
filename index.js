@@ -53,6 +53,8 @@ function handler(request, response) {
   });
 };
 
+//keeps track of contributors
+var boxes = {}
 
 io.sockets.on('connection', function(socket) {
   var ip = socket.handshake.address.address
@@ -64,10 +66,21 @@ io.sockets.on('connection', function(socket) {
 
   //Setup message handler
   socket.on('join', function(message) {
-         console.log("shnur?");
+    if (contributors[message.id] !== null){
+      console.log("added job");
+    }
     socket.broadcast.emit('join', {
 
-      
+    });
+  });
+
+    socket.on('add_box', function(message) {
+      debugger;
+    if (boxes[message.id] !== null){
+      console.log("added job");
+    }
+    socket.broadcast.emit('add_box', {
+
     });
   });
 });

@@ -4,11 +4,14 @@ ml.Game = new Class({
   defaults: $.extend({}, ml.config),
 
   construct: function(options) {
+    self = this;
     this.options = jQuery.extend({}, this.defaults, options);
     var container, stats;
     var camera, controls, scene, projector, renderer;
     var objects = [],
       plane;
+    numContributors = 1;
+    socket = io.connect(this.options.comm.server)
 
 
 
@@ -56,8 +59,7 @@ ml.Game = new Class({
       scene.add(light);
 
       var geometry = new THREE.CubeGeometry(40, 40, 40);
-
-      for (var i = 0; i < 200; i++) {
+      for (var i = 0; i < numContributors; i++) {
 
         var object = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({
           color: Math.random() * 0xffffff
@@ -125,7 +127,6 @@ ml.Game = new Class({
       renderer.domElement.addEventListener('mousedown', onDocumentMouseDown, false);
       renderer.domElement.addEventListener('mouseup', onDocumentMouseUp, false);
 
-      //
 
       window.addEventListener('resize', onWindowResize, false);
 
@@ -250,27 +251,25 @@ ml.Game = new Class({
     }
 
     function render() {
-
       controls.update();
-
       renderer.render(scene, camera);
-
     }
 
   },
 
   init: function() {
     //SERVER EVENTS
-    debugger;
     this.comm = new ml.Comm({
       server: this.options.comm.server
     });
 
     this.comm.on('join', this.handleJoin);
-
     this.comm.connected();
   },
   handleJoin: function(message) {
     console.log("SHNUR");
+  },
+  handleAddBox: function(object){
+    this.comm.addBox(object);
   }
 });
