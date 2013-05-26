@@ -41,10 +41,9 @@ ml.Comm = new Class({
     this.socket.emit('join', {});
   },
 
-  addObject: function(position) {
-    console.log(position);
+  addObject: function(object) {
     this.socket.emit('add_object', {
-      position: position
+      object: object
     });
   }
 });

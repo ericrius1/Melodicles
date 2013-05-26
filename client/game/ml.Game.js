@@ -13,8 +13,6 @@ ml.Game = new Class({
     numContributors = 1;
     socket = io.connect(this.options.comm.server)
 
-
-
     var mouse = new THREE.Vector2(),
       offset = new THREE.Vector3(),
       INTERSECTED, SELECTED;
@@ -58,34 +56,35 @@ ml.Game = new Class({
 
       scene.add(light);
 
-      var geometry = new THREE.CubeGeometry(40, 40, 40);
-      for (var i = 0; i < numContributors; i++) {
 
-        var object = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({
-          color: Math.random() * 0xffffff
-        }));
+      //*****CREATE BOX***********
 
-        object.material.ambient = object.material.color;
 
-        object.position.x = Math.random() * 1000 - 500;
-        object.position.y = Math.random() * 600 - 300;
-        object.position.z = Math.random() * 800 - 400;
+      var geometry = new THREE.CubeGeometry(40, 40, 40); 
+      var color = new THREE.Color(Math.random() * 0xffffff)
+      var object = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({
+        color: color
+      }));
+      object.material.ambient = object.material.color;
+      object.color = color;
+      object.position.x = Math.random() * 1000 - 500;
+      object.position.y = Math.random() * 600 - 300;
+      object.position.z = Math.random() * 800 - 400;
 
-        object.rotation.x = Math.random() * 2 * Math.PI;
-        object.rotation.y = Math.random() * 2 * Math.PI;
-        object.rotation.z = Math.random() * 2 * Math.PI;
+      object.rotation.x = Math.random() * 2 * Math.PI;
+      object.rotation.y = Math.random() * 2 * Math.PI;
+      object.rotation.z = Math.random() * 2 * Math.PI;
 
-        object.scale.x = Math.random() * 2 + 1;
-        object.scale.y = Math.random() * 2 + 1;
-        object.scale.z = Math.random() * 2 + 1;
+      object.scale.x = Math.random() * 2 + 1;
+      object.scale.y = Math.random() * 2 + 1;
+      object.scale.z = Math.random() * 2 + 1;
 
-        object.castShadow = true;
-        object.receiveShadow = true;
+      object.castShadow = true;
+      object.receiveShadow = true;
 
-        scene.add(object);
+      scene.add(object);
 
-        objects.push(object);
-      }
+      objects.push(object);
 
       plane = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000, 8, 8), new THREE.MeshBasicMaterial({
         color: 0x000000,
@@ -221,7 +220,6 @@ ml.Game = new Class({
     }
 
     function onDocumentMouseUp(event) {
-
       event.preventDefault();
 
       controls.enabled = true;
@@ -237,8 +235,6 @@ ml.Game = new Class({
       container.style.cursor = 'auto';
 
     }
-
-    //
 
     function animate() {
 
@@ -267,40 +263,40 @@ ml.Game = new Class({
     this.comm.on('object list', this.handleObjectList);
 
     for (var i = 0; i < objects.length; i++) {
-      this.handleAddObject(objects[i].position);
+      this.handleAddObject(objects[i]);
     }
   },
   handleJoin: function(message) {
     console.log("joined");
   },
-  handleAddObject: function(position) {
-    this.comm.addObject(position);
+  handleAddObject: function(object) {
+    var copiedObject = {}
+    copiedObject.position = object.position;
+    copiedObject.rotation = object.rotation
+    copiedObject.scale = object.scale;
+    copiedObject.color = object.color;
+    this.comm.addObject(copiedObject);
   },
-  handleObjectList: function(positions) {
-    
-    var geometry = new THREE.CubeGeometry(40, 40, 40);
-    var object = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({
-      color: Math.random() * 0xffffff
-    }));
 
+  //The server gives us the list of the other objects, we need to add them to our scene
+  handleObjectList: function(objects) {
+    console.log(objects);
+    var numObjects = objects.length;
+    for (var i = 0; i < numObjects; i++) {
 
-    object.material.ambient = object.material.color;
+      var geometry = new THREE.CubeGeometry(40, 40, 40);
+     var object = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({
+        color: objects[i].color
+      }));
+      object.material.ambient = object.material.color;
+      object.position = objects[i].position;
+      object.rotation = objects[i].rotation;
+      object.scale = objects[i].scale;
+      object.castShadow = true;
+      object.receiveShadow = true;
 
-    object.position.x = positions[0].x;
-    object.position.y = positions[0].y;
-    object.position.z = positions[0].z;
-
-    object.rotation.x = Math.random() * 2 * Math.PI;
-    object.rotation.y = Math.random() * 2 * Math.PI;
-    object.rotation.z = Math.random() * 2 * Math.PI;
-
-    object.scale.x = Math.random() * 2 + 1;
-    object.scale.y = Math.random() * 2 + 1;
-    object.scale.z = Math.random() * 2 + 1;
-
-    object.castShadow = true;
-    object.receiveShadow = true;
-    scene.add(object);
-
+      scene.add(object);
+      objects.push(object);
+    }
   }
 });
