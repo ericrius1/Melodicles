@@ -1,4 +1,3 @@
-
 ml.Comm = new Class({
   extend: EventEmitter,
   makeTrigger: function(evt) {
@@ -25,22 +24,27 @@ ml.Comm = new Class({
     this.socket = io.connect(options.server);
 
     this.socket.on('join', this.makeTrigger('join'));
-    this.socket.on('add_box', this.makeTrigger('add_box'));
+
     this.socket.on('failed'),
+
     function(message) {
       //try to reconnect
       that.connected();
     }
+
+    this.socket.on('add_object', this.makeTrigger('add_object'));
+
+    this.socket.on('object list', this.makeTrigger('object list'));
   },
 
-  connected: function(){
-    console.log("yeah")
+  connected: function() {
     this.socket.emit('join', {});
   },
 
-  addBox: function(position){
-    this.socket.emit('add_box', {
-       position: position
+  addObject: function(position) {
+    console.log(position);
+    this.socket.emit('add_object', {
+      position: position
     });
   }
 });

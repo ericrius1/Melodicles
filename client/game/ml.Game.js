@@ -85,7 +85,6 @@ ml.Game = new Class({
         scene.add(object);
 
         objects.push(object);
-
       }
 
       plane = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000, 8, 8), new THREE.MeshBasicMaterial({
@@ -258,22 +257,26 @@ ml.Game = new Class({
   },
 
   init: function() {
-    //SERVER EVENTS
+    //EVENTS
     this.comm = new ml.Comm({
       server: this.options.comm.server
     });
 
     this.comm.on('join', this.handleJoin);
     this.comm.connected();
+    this.comm.on('object list', this.handleObjectList);
 
-    for(var i = 0; i < objects.length; i++ ){
-      this.handleAddBox(objects[i].position);
+    for (var i = 0; i < objects.length; i++) {
+      this.handleAddObject(objects[i].position);
     }
   },
   handleJoin: function(message) {
-    console.log("SHNUR");
+    console.log("joined");
   },
-  handleAddBox: function(position){
-    this.comm.addBox(position);
+  handleAddObject: function(position) {
+    this.comm.addObject(position);
+  },
+  handleObjectList: function(message) {
+    console.log(message);
   }
 });

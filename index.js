@@ -55,30 +55,28 @@ function handler(request, response) {
 };
 
 //keeps track of contributors
-var boxes = {}
+var objects = [];
 
 io.sockets.on('connection', function(socket) {
   var ip = socket.handshake.address.address
 
   //send welcome message
   socket.emit('welcome', {
-    message: "Welcome to Melodicles"
+    message: "Welcome a new player to Melodicles!"
   });
 
   //Setup message handler
   socket.on('join', function(message) {
-    socket.broadcast.emit('join', {
-
-    });
+    console.log("server");
+    //Send list of objects
+    socket.emit('object list', objects);
+    //Broadcast only sends to clients which are not the current one
+   // socket.broadcast.emit('join');
   });
 
-  socket.on('add_box', function(message) {
-    console.log("RECIEVED")
-    if (boxes[message.id] !== null) {
-      console.log("added job");
-    }
-    socket.broadcast.emit('add_box', {
-
-    });
+  socket.on('add_object', function(message) {
+    console.log(message);
+    objects.push(message.position);
   });
+
 });
