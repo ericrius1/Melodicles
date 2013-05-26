@@ -7,7 +7,7 @@ ml.Game = new Class({
     self = this;
     this.options = jQuery.extend({}, this.defaults, options);
     var container, stats;
-    var camera, controls, scene, projector, renderer;
+    var camera, controls, projector, renderer;
     objects = [];
     var plane;
     numContributors = 1;
@@ -276,7 +276,31 @@ ml.Game = new Class({
   handleAddObject: function(position) {
     this.comm.addObject(position);
   },
-  handleObjectList: function(message) {
-    console.log(message);
+  handleObjectList: function(positions) {
+    
+    var geometry = new THREE.CubeGeometry(40, 40, 40);
+    var object = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({
+      color: Math.random() * 0xffffff
+    }));
+
+
+    object.material.ambient = object.material.color;
+
+    object.position.x = positions[0].x;
+    object.position.y = positions[0].y;
+    object.position.z = positions[0].z;
+
+    object.rotation.x = Math.random() * 2 * Math.PI;
+    object.rotation.y = Math.random() * 2 * Math.PI;
+    object.rotation.z = Math.random() * 2 * Math.PI;
+
+    object.scale.x = Math.random() * 2 + 1;
+    object.scale.y = Math.random() * 2 + 1;
+    object.scale.z = Math.random() * 2 + 1;
+
+    object.castShadow = true;
+    object.receiveShadow = true;
+    scene.add(object);
+
   }
 });

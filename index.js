@@ -69,13 +69,12 @@ io.sockets.on('connection', function(socket) {
   socket.on('join', function(message) {
     console.log("server");
     //Send list of objects
-    socket.emit('object list', objects);
+    socket.broadcast.emit('object list', objects);
     //Broadcast only sends to clients which are not the current one
    // socket.broadcast.emit('join');
   });
 
   socket.on('add_object', function(message) {
-    console.log(message);
     objects.push(message.position);
   });
 
