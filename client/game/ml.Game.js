@@ -9,6 +9,7 @@ ml.Game = new Class({
     var container, stats;
     var camera, controls, projector, renderer;
     objects = [];
+    this.id = 1;
     var plane;
     numContributors = 1;
     socket = io.connect(this.options.comm.server)
@@ -60,7 +61,7 @@ ml.Game = new Class({
       //*****CREATE BOX***********
 
 
-      var geometry = new THREE.CubeGeometry(40, 40, 40); 
+      var geometry = new THREE.CubeGeometry(40, 40, 40);
       var color = new THREE.Color(Math.random() * 0xffffff)
       var object = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({
         color: color
@@ -275,28 +276,30 @@ ml.Game = new Class({
     copiedObject.rotation = object.rotation
     copiedObject.scale = object.scale;
     copiedObject.color = object.color;
+    copiedObject.id = this.id;
     this.comm.addObject(copiedObject);
+    this.id++;
   },
 
   //The server gives us the list of the other objects, we need to add them to our scene
-  handleObjectList: function(objects) {
-    console.log(objects);
-    var numObjects = objects.length;
-    for (var i = 0; i < numObjects; i++) {
+  handleObjectList: function(metaObject) {
+    console.log(metaObject);
+    var ids = _.pluck(metaObject, 'id');
+    console.log(ids);
 
+    for(var i = 0; i < ids.length; i++){
       var geometry = new THREE.CubeGeometry(40, 40, 40);
-     var object = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({
-        color: objects[i].color
+      var object = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({
+        color: metaObject[ids[i]].color
       }));
-      object.material.ambient = object.material.color;
-      object.position = objects[i].position;
-      object.rotation = objects[i].rotation;
-      object.scale = objects[i].scale;
+      object.position = metaObject[ids[i]].position;
+      object.rotation = metaObject[ids[i]].rotation;
+      object.scale = metaObject[ids[i]].scale;
       object.castShadow = true;
       object.receiveShadow = true;
 
       scene.add(object);
       objects.push(object);
-    }
+   }
   }
 });
