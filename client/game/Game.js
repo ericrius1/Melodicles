@@ -21,7 +21,7 @@ Game = function(){
 
       var textureCounter = 0;
 
-      var animDelta = 0, animDeltaDir = -1;
+      var animDelta = 0, animDeltaDir = -1, animDeltaIntensity = 0.05;
       var lightVal = 0, lightDir = 1;
       var soundVal = 0, oldSoundVal = 0, soundDir = 1;
 
@@ -162,7 +162,7 @@ Game = function(){
         uniformsTerrain[ "uSpecularColor" ].value.setHex( 0xffffff );
         uniformsTerrain[ "uAmbientColor" ].value.setHex( 0x111111 );
 
-        uniformsTerrain[ "uShininess" ].value = 30;
+        uniformsTerrain[ "uShininess" ].value = 300;
 
         uniformsTerrain[ "uDisplacementScale" ].value = 375;
 
@@ -239,7 +239,7 @@ Game = function(){
 
         window.addEventListener( 'resize', onWindowResize, false );
 
-        document.addEventListener( 'keydown', onKeyDown, false );
+        document.addEventListener( 'keydown', onKeyUp, false );
 
         // COMPOSER
 
@@ -325,7 +325,7 @@ Game = function(){
 
         var startX = -3000;
 
-        loader.load( "models/animated/parrot.js", function( geometry ) {
+        loader.load( "client/lib/models/parrot.js", function( geometry ) {
 
           morphColorsToFaceColors( geometry );
           addMorph( geometry, 250, 500, startX -500, 500, 700 );
@@ -335,14 +335,14 @@ Game = function(){
 
         } );
 
-        loader.load( "models/animated/flamingo.js", function( geometry ) {
+        loader.load( "client/lib/models/flamingo.js", function( geometry ) {
 
           morphColorsToFaceColors( geometry );
           addMorph( geometry, 500, 1000, startX - Math.random() * 500, 350, 40 );
 
         } );
 
-        loader.load( "models/animated/stork.js", function( geometry ) {
+        loader.load( "client/lib/models/stork.js", function( geometry ) {
 
           morphColorsToFaceColors( geometry );
           addMorph( geometry, 350, 1000, startX - Math.random() * 500, 350, 340 );
@@ -371,17 +371,29 @@ Game = function(){
 
       //
 
-      function onKeyDown ( event ) {
+      function onKeyUp ( event ) {
 
         switch( event.keyCode ) {
 
           case 78: /*N*/  lightDir *= -1; break;
-          case 77: /*M*/  animDeltaDir *= -1; break;
+          case 38:
+            animDeltaDir = 1; 
+            animDeltaIntensity+=0.01;
+            console.log("shnur?");
+
+            break;
+          case 40:
+            animDeltaIntensity-=0.01;
+            break;
           case 66: /*B*/  soundDir *= -1; break;
 
         }
 
       };
+
+      function onMouseDown(event){
+
+      }
 
       //
 
@@ -418,7 +430,6 @@ Game = function(){
 
           terrain.visible = true;
 
-          document.getElementById( "loading" ).style.display = "none";
 
         }
 
@@ -474,8 +485,8 @@ Game = function(){
           uniformsTerrain[ "uNormalScale" ].value = THREE.Math.mapLinear( valNorm, 0, 1, 0.6, 3.5 );
 
           if ( updateNoise ) {
-
-            animDelta = THREE.Math.clamp( animDelta + 0.00075 * animDeltaDir, 0, 0.05 );
+            console.log("intensity, ", animDeltaIntensity);
+            animDelta = THREE.Math.clamp( animDelta + 0.00075* animDeltaDir, 0, animDeltaIntensity);
             uniformsNoise[ "time" ].value += delta * animDelta;
 
             uniformsNoise[ "offset" ].value.x += delta * 0.05;
@@ -511,7 +522,7 @@ Game = function(){
           }
 
           //renderer.render( scene, camera );
-          composer.render( 0.1 );
+          composer.render( 1.0 );
 
         }
 
