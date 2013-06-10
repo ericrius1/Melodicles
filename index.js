@@ -57,17 +57,6 @@ function handler(request, response) {
 
 io.sockets.on('connection', function(socket) {
   var ip = socket.handshake.address.address
-  console.log("connect");
-
-  //send welcome message
-  socket.emit('welcome', {
-    message: "Welcome a new player to Melodicles!"
-  });
-
-  //Setup message handler
-  socket.on('join', function(message) {
-    console.log("server");
-
-  });
+  socket.emit('news', {hello: 'world'});
 
 });
