@@ -1,13 +1,11 @@
 var app = require('http').createServer(handler);
-var io = require('socket.io').listen(app);
 var url = require("url");
 var path = require("path");
 var fs = require("fs")
+var Firebase = require('firebase');
 
 var port = 8080;
-io.set('log level', 1);
-app.listen(port);
-console.log("listening at http://" + '127.0.0.1:' + port);
+
 
 function handler(request, response) {
   var uri = url.parse(request.url).pathname,
@@ -54,9 +52,7 @@ function handler(request, response) {
   });
 };
 
+var myRootRef = new Firebase('http://particles.firebaseIO.com/');
+app.listen(port)
+console.log("listening at http://" + '127.0.0.1:' + port);
 
-io.sockets.on('connection', function(socket) {
-  var ip = socket.handshake.address.address
-  socket.emit('news', {hello: 'world'});
-
-});

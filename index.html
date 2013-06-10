@@ -7,8 +7,8 @@
   <script src = "client/lib/stats.min.js"></script>
   <script src = "client/lib/underscore.js"></script>
   <script src = "client/lib/TrackballControls.js"></script>
-  <script src="/socket.io/socket.io.js"></script>
   <script src = "client/game/Game.js"></script>
+  <script type='text/javascript' src='https://cdn.firebase.com/v0/firebase.js'></script>
 
 
   <div id="container"></div>
@@ -18,6 +18,8 @@
 
   <script>
     $(document).ready(function() {
+      myRootRef = new Firebase('http://particles.firebaseIO.com/');
+      myRootRef.set('Hello World!');
       game = new Game();
     });
   </script>
