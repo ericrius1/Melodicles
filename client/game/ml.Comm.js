@@ -32,18 +32,9 @@ ml.Comm = new Class({
       that.connected();
     }
 
-    this.socket.on('add_object', this.makeTrigger('add_object'));
-
-    this.socket.on('object list', this.makeTrigger('object list'));
   },
 
   connected: function() {
     this.socket.emit('join', {});
-  },
-
-  addObject: function(object) {
-    this.socket.emit('add_object', {
-      object: object
-    });
   }
 });
