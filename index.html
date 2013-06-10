@@ -29,18 +29,6 @@
   <script src = "client/game/Game.js"></script>
   <script type='text/javascript' src='https://cdn.firebase.com/v0/firebase.js'></script>
 
-  <script src="http://connect.soundcloud.com/sdk.js"></script>
-  <script>
-  SC.initialize({
-    
-  });
-
-  SC.stream("https://soundcloud.com/aboveandbeyond/above-beyond-pres-oceanlab-if-i-could-fly", function(sound){
-    sound.play();
-  });
-  </script>
-
-
   <div id="container"></div>
   <div id="info">
     PRESS THE UP AND DOWN ARROW KEYS!
@@ -188,9 +176,9 @@
       }
 
     </script>
-
   <script>
     $(document).ready(function() {
+
       myRootRef = new Firebase('http://particles.firebaseIO.com/');
       game = new Game();
     });
