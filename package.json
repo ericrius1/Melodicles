@@ -1,11 +1,12 @@
 {
   "name": "Melodicles",
-  "version": "0.1.0-3",
+  "version": "0.1.0-9",
   "repository": {
     "type": "git",
     "url": "https://github.com/ericrius/Melodicles.git"
   },
   "dependencies": {
+    "firebase": "~0.5.4"
   },
   "subdomain": "ericrius1-server",
   "scripts": {
