@@ -55,4 +55,5 @@ function handler(request, response) {
 var myRootRef = new Firebase('http://particles.firebaseIO.com/');
 app.listen(port)
 console.log("listening at http://" + '127.0.0.1:' + port);
+console.log("modules ", Object.keys(require('module')._cache));
 
