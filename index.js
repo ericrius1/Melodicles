@@ -54,11 +54,10 @@ function handler(request, response) {
   });
 };
 
-//keeps track of contributors
-var objects = [];
 
 io.sockets.on('connection', function(socket) {
   var ip = socket.handshake.address.address
+  console.log("connect");
 
   //send welcome message
   socket.emit('welcome', {
@@ -68,14 +67,7 @@ io.sockets.on('connection', function(socket) {
   //Setup message handler
   socket.on('join', function(message) {
     console.log("server");
-    //Send list of objects
-    socket.emit('object list', objects);
-    //Broadcast only sends to clients which are not the current one
-   // socket.broadcast.emit('join');
-  });
 
-  socket.on('add_object', function(message) {
-    objects.push(message.object);
   });
 
 });
