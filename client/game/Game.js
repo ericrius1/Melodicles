@@ -78,7 +78,7 @@ Game = function(){
         // SCENE (FINAL)
 
         scene = new THREE.Scene();
-        scene.fog = new THREE.Fog( 0x050505, 2000, 4000 );
+        scene.fog = new THREE.Fog( 0xff00ff, 20, 4000 );
 
         // LIGHTS
 
@@ -332,6 +332,12 @@ Game = function(){
           addMorph( geometry, 250, 500, startX - Math.random() * 500, 500, -200 );
           addMorph( geometry, 250, 500, startX - Math.random() * 500, 500, 200 );
           addMorph( geometry, 250, 500, startX - Math.random() * 500, 500, 1000 );
+          addMorph( geometry, 250, 500, startX - Math.random() * 500, 500, 1000 );
+          addMorph( geometry, 250, 500, startX - Math.random() * 500, 500, 1000 );
+          addMorph( geometry, 250, 500, startX - Math.random() * 500, 500, 1000 );
+          addMorph( geometry, 250, 500, startX - Math.random() * 500, 500, 1000 );
+          addMorph( geometry, 250, 500, startX - Math.random() * 500, 500, 1000 );
+          addMorph( geometry, 250, 500, startX - Math.random() * 500, 500, 1000 );
 
         } );
 
@@ -339,12 +345,24 @@ Game = function(){
 
           morphColorsToFaceColors( geometry );
           addMorph( geometry, 500, 1000, startX - Math.random() * 500, 350, 40 );
+          addMorph( geometry, 500, 1000, startX - Math.random() * 500, 350, 40 );
+          addMorph( geometry, 500, 1000, startX - Math.random() * 500, 350, 40 );
+          addMorph( geometry, 500, 1000, startX - Math.random() * 500, 350, 40 );
+          addMorph( geometry, 500, 1000, startX - Math.random() * 500, 350, 40 );
+          addMorph( geometry, 500, 1000, startX - Math.random() * 500, 350, 40 );
+          addMorph( geometry, 500, 1000, startX - Math.random() * 500, 350, 40 );
 
         } );
 
         loader.load( "client/lib/models/stork.js", function( geometry ) {
 
           morphColorsToFaceColors( geometry );
+          addMorph( geometry, 350, 1000, startX - Math.random() * 500, 350, 340 );
+          addMorph( geometry, 350, 1000, startX - Math.random() * 500, 350, 340 );
+          addMorph( geometry, 350, 1000, startX - Math.random() * 500, 350, 340 );
+          addMorph( geometry, 350, 1000, startX - Math.random() * 500, 350, 340 );
+          addMorph( geometry, 350, 1000, startX - Math.random() * 500, 350, 340 );
+          addMorph( geometry, 350, 1000, startX - Math.random() * 500, 350, 340 );
           addMorph( geometry, 350, 1000, startX - Math.random() * 500, 350, 340 );
 
         } );

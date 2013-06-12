@@ -24,7 +24,7 @@ THREE.MaskPass.prototype = {
 		// don't update color or depth
 
 		context.colorMask( false, false, false, false );
-		context.depthMask( false );
+		context.depthMask( true );
 
 		// set up stencil
 
